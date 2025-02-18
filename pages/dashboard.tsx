@@ -12,6 +12,8 @@ export default function Dashboard() {
   const [comerciales, setComerciales] = useState<any[]>([]);
   const [tarjetas, setTarjetas] = useState<any[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [descargasMap, setDescargasMap] = useState<{ [key: string]: { visitas: number; downloads: number } }>({});
+
 
   useEffect(() => {
     async function fetchUsuario() {
@@ -84,6 +86,37 @@ export default function Dashboard() {
     fetchUsuario();
   }, []);
 
+
+  // Función para obtener visitas y descargas
+const fetchDescargas = async () => {
+  try {
+    const { data, error } = await supabase.from("descargas").select("tarjeta_id, tipo");
+    if (error) throw error;
+
+    // Generar un objeto con el total de visitas y descargas por tarjeta
+    const descargasCount: { [key: string]: { visitas: number; downloads: number } } = {};
+
+    data.forEach((d) => {
+      const tarjetaId = d.tarjeta_id;
+      if (!descargasCount[tarjetaId]) {
+        descargasCount[tarjetaId] = { visitas: 0, downloads: 0 };
+      }
+      if (d.tipo === "view") descargasCount[tarjetaId].visitas++;
+      if (d.tipo === "download") descargasCount[tarjetaId].downloads++;
+    });
+
+    setDescargasMap(descargasCount);
+  } catch (err) {
+    console.error("Error obteniendo visitas y descargas:", err);
+  }
+};
+
+// Llamamos a la función cuando el componente se monta
+useEffect(() => {
+  fetchDescargas();
+}, []);
+
+
   async function toggleComercial(id: string) {
     try {
       console.log(`Toggling comercial ID: ${id}`);
@@ -151,7 +184,7 @@ export default function Dashboard() {
       // Obtener estado actual de la tarjeta
       const { data, error } = await supabase
         .from("tarjetas")
-        .select("activa") 
+        .select("activa, comercial_id") 
         .eq("id", id)
         .single();
   
@@ -161,11 +194,16 @@ export default function Dashboard() {
       }
   
       const nuevoEstado = !data.activa;
+      const updateData: { activa: boolean; comercial_id?: null } = { activa: nuevoEstado };
+      
+      if (!nuevoEstado) {
+        updateData.comercial_id = null;
+      }
   
       // Actualizar estado en la base de datos
       const { error: updateError } = await supabase
         .from("tarjetas")
-        .update({ activa: nuevoEstado }) 
+        .update( updateData ) 
         .eq("id", id);
   
       if (updateError) {
@@ -177,7 +215,9 @@ export default function Dashboard() {
   
       // Actualizar lista de tarjetas en la UI
       setTarjetas((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, activa: nuevoEstado } : t))
+        prev.map((t) =>
+          t.id === id ? { ...t, activa: nuevoEstado, comercial_id: nuevoEstado ? t.comercial_id : null } : t
+        )
       );
   
     } catch (err) {
@@ -191,40 +231,46 @@ export default function Dashboard() {
 
   return (
     <ProtectedRoute>
-      <div className="p-6 min-h-screen bg-gray-900 text-gray-200">
-
-        <div className="bg-gray-800 p-6 shadow-md rounded-lg">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-white">Panel de Administración</h1>
-              {/* Botones */}
-              <div className="mt-6 flex space-x-4">
-                <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onClick={() => router.push("/add_comercial")}>
+      <div className="p-4 md:p-6 min-h-screen bg-gray-900 text-gray-200">
+        <div className="bg-gray-800 p-4 md:p-6 shadow-md rounded-lg">
+          {/* Título y Logout */}
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-white text-center md:text-left">
+              Panel de Administración
+            </h1>
+            <Logout />
+          </div>
+  
+          {/* Mensaje de error */}
+          {errorMessage && <p className="text-red-400 mt-4 text-center">{errorMessage}</p>}
+  
+          {empresa ? (
+            <div className="mt-6">
+              <h2 className="text-xl md:text-2xl font-bold text-white text-center md:text-left">
+                Empresa: {empresa.nombre}
+              </h2>
+  
+              {/* Botones de administración */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full" onClick={() => router.push("/add_comercial")}>
                   Añadir Comercial
                 </button>
-                <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded" onClick={() => router.push("/asignar_tarjetas")}>
+                <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded w-full" onClick={() => router.push("/asignar_tarjetas")}>
                   Asignar Tarjetas
                 </button>
-                <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onClick={() => router.push("/configuracion_empresa")}>
+                <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded w-full" onClick={() => router.push("/configuracion_empresa")}>
                   Configuración de Empresa
                 </button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onClick={() => router.push("/perfil")}>
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full" onClick={() => router.push("/perfil")}>
                   Ver Perfil
                 </button>
               </div>
-            <Logout />
-          </div>
-
-          {errorMessage && <p className="text-red-400 mt-4">{errorMessage}</p>}
-
-          {empresa ? (
-            <div className="mt-6">
-              <h2 className="text-2xl font-bold text-white">Empresa: {empresa.nombre}</h2>
-
+  
               {/* Administradores */}
-              <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
-                <h2 className="text-xl font-bold text-white">Administradores</h2>
-                {admins.length > 0 ? (
-                  <table className="table-auto border-collapse w-full my-4 shadow-md text-gray-300">
+              <div className="mt-6 bg-gray-700 p-4 rounded-md">
+                <h2 className="text-lg font-bold text-white">Administradores</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm md:text-base">
                     <thead>
                       <tr className="bg-gray-600 text-gray-200">
                         <th className="border px-4 py-2">Nombre</th>
@@ -240,22 +286,20 @@ export default function Dashboard() {
                       ))}
                     </tbody>
                   </table>
-                ) : (
-                  <p className="text-gray-400">No hay administradores registrados.</p>
-                )}
+                </div>
               </div>
-
+  
               {/* Comerciales */}
-              <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
-                <h2 className="text-xl font-bold text-white">Comerciales</h2>
-                {comerciales.length > 0 ? (
-                  <table className="table-auto border-collapse w-full my-4 shadow-md text-gray-300">
+              <div className="mt-6 bg-gray-700 p-4 rounded-md">
+                <h2 className="text-lg font-bold text-white">Comerciales</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm md:text-base">
                     <thead>
                       <tr className="bg-gray-600 text-gray-200">
                         <th className="border px-4 py-2">Nombre</th>
                         <th className="border px-4 py-2">Email</th>
-                        <th className="border px-4 py-2">Status</th>  {/* Nueva columna de estado */}
-                        <th className="border px-4 py-2">Acción</th>  {/* Nueva columna de acción */}
+                        <th className="border px-4 py-2">Estado</th>
+                        <th className="border px-4 py-2">Acción</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -264,20 +308,14 @@ export default function Dashboard() {
                           <td className="border px-4 py-2">{c.nombre}</td>
                           <td className="border px-4 py-2">{c.email}</td>
                           <td className="border px-4 py-2">
-                            <span
-                              className={`inline-block px-3 py-1 rounded-full text-white ${
-                                c.activo ? "bg-green-500" : "bg-red-500"
-                              }`}
-                            >
+                            <span className={`px-2 py-1 rounded text-white ${c.activo ? "bg-green-500" : "bg-red-500"}`}>
                               {c.activo ? "Activo" : "Inactivo"}
                             </span>
                           </td>
                           <td className="border px-4 py-2">
                             <button
                               onClick={() => toggleComercial(c.id)}
-                              className={`px-3 py-1 rounded text-white ${
-                                c.activo ? "bg-red-500 hover:bg-red-700" : "bg-green-500 hover:bg-green-700"
-                              }`}
+                              className={`px-3 py-1 rounded text-white ${c.activo ? "bg-red-500 hover:bg-red-700" : "bg-green-500 hover:bg-green-700"}`}
                             >
                               {c.activo ? "Desactivar" : "Activar"}
                             </button>
@@ -286,70 +324,74 @@ export default function Dashboard() {
                       ))}
                     </tbody>
                   </table>
-                ) : (
-                  <p className="text-gray-400">No hay comerciales registrados.</p>
-                )}
+                </div>
               </div>
-
-
+  
               {/* Tarjetas */}
-              <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
-                <h2 className="text-xl font-bold text-white">Tarjetas</h2>
-                {tarjetas && tarjetas.length > 0 ? (
-                  <table className="table-auto border-collapse w-full my-4 shadow-md text-gray-300">
+              <div className="mt-6 bg-gray-700 p-4 rounded-md">
+                <h2 className="text-lg font-bold text-white">Tarjetas</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm md:text-base">
                     <thead>
                       <tr className="bg-gray-600 text-gray-200">
                         <th className="border px-4 py-2">Código</th>
                         <th className="border px-4 py-2">URL</th>
                         <th className="border px-4 py-2">Comercial</th>
                         <th className="border px-4 py-2">Estado</th>
+                        <th className="border px-4 py-2">Visitas</th>
+                        <th className="border px-4 py-2">Descargas</th>
                         <th className="border px-4 py-2">Acción</th>
                       </tr>
                     </thead>
                     <tbody>
-                    {tarjetas.map((t) => (
-                      <tr key={t.id} className="text-center bg-gray-800 hover:bg-gray-700">
-                        <td className="border px-4 py-2">{t.codigo}</td>
-                        <td className="border px-4 py-2">
-                          <a
-                            href={`https://qr.techversio.com/u/${t.url_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 underline"
-                          >
-                            Link
-                          </a>
-                        </td>
-                        <td className="border px-4 py-2">{t.usuarios?.nombre || "No asignado"}</td>
-                        <td className="border px-4 py-2">
-                          <span className={`inline-block px-3 py-1 rounded-full text-white ${t.activa ? "bg-green-500" : "bg-red-500"}`}>
-                            {t.activa ? "Activa" : "Inactiva"}
-                          </span>
-                        </td>
-                        <td className="border px-4 py-2">
-                          <button
-                            onClick={() => toggleTarjeta(t.id)}
-                            className={`px-3 py-1 rounded text-white ${t.activa ? "bg-red-500 hover:bg-red-700" : "bg-green-500 hover:bg-green-700"}`}
-                          >
-                            {t.activa ? "Desactivar" : "Activar"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {tarjetas.map((t) => {
+                      const visitas = descargasMap[t.id]?.visitas || 0;
+                      const downloads = descargasMap[t.id]?.downloads || 0;
+
+                      return (
+                        <tr key={t.id} className="text-center bg-gray-800 hover:bg-gray-700">
+                          <td className="border px-4 py-2">{t.codigo}</td>
+                          <td className="border px-4 py-2">
+                            <a
+                              href={`https://qr.techversio.com/u/${t.url_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 underline"
+                            >
+                              Link
+                            </a>
+                          </td>
+                          <td className="border px-4 py-2">{t.usuarios?.nombre || "No asignado"}</td>
+                          <td className="border px-4 py-2">
+                            <span className={`px-2 py-1 rounded text-white ${t.activa ? "bg-green-500" : "bg-red-500"}`}>
+                              {t.activa ? "Activa" : "Inactiva"}
+                            </span>
+                          </td>
+                          <td className="border px-4 py-2">{visitas}</td>
+                          <td className="border px-4 py-2">{downloads}</td>
+                          <td className="border px-4 py-2">
+                            <button
+                              onClick={() => toggleTarjeta(t.id)}
+                              className={`px-3 py-1 rounded text-white ${t.activa ? "bg-red-500 hover:bg-red-700" : "bg-green-500 hover:bg-green-700"}`}
+                            >
+                              {t.activa ? "Desactivar" : "Activar"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
-
                   </table>
-                ) : (
-                  <p className="text-gray-400">No hay tarjetas registradas.</p>
-                )}
+                </div>
               </div>
-
+  
             </div>
           ) : (
-            <p className="text-gray-400 mt-4">No tienes una empresa asignada.</p>
+            <p className="text-gray-400 mt-4 text-center">No tienes una empresa asignada.</p>
           )}
         </div>
       </div>
     </ProtectedRoute>
   );
+  
 }
