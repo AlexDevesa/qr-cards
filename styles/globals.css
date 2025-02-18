@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tema oscuro global */
+body {
+  @apply bg-gray-900 text-gray-200 font-sans;
+}
+
+/* Inputs personalizados */
+input {
+  @apply bg-gray-800 text-white border border-gray-600 p-3 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+input::placeholder {
+  @apply text-gray-400;
+}
+
+/* Botones generales */
+button {
+  @apply bg-blue-600 text-white py-2 px-4 rounded-md transition duration-300;
+}
+
+button:hover {
+  @apply bg-blue-700;
+}
+
+/* Botón de error */
+button.error {
+  @apply bg-red-600 hover:bg-red-700;
+}
+
+/* Contenedor general reutilizable */
+.container {
+  @apply max-w-lg mx-auto p-6 bg-gray-800 rounded-lg shadow-md;
+}
+
+/* Estilo de los títulos */
+h1, h2 {
+  @apply font-bold text-gray-900 dark:text-white;
+}
+
+
+h1 {
+  @apply text-3xl;
+}
+
+h2 {
+  @apply text-2xl;
+}
+
+/* Mensajes de error */
+.text-error {
+  @apply text-red-500 text-sm mt-2;
+}
+
+
+/* 🎨 Fondo y colores base */
+body {
+  background-color: #121212; /* Fondo oscuro */
+  color: #ffffff; /* Texto blanco */
+}
+
+/* 📥 Inputs */
+input {
+  background-color: #1e1e1e; /* Fondo gris oscuro */
+  color: #ffffff; /* Texto blanco */
+  border: 1px solid #3a3a3a; /* Borde gris */
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+}
+
+input::placeholder {
+  color: #b3b3b3;
+}
+
+/* 🔘 Botones reutilizables */
+.btn-primary {
+  background-color: #007bff; /* Azul */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #28a745; /* Verde */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #1e7e34;
+}
+
+.btn-tertiary {
+  background-color: #6c757d; /* Gris */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.btn-tertiary:hover {
+  background-color: #5a6268;
+}
+
+.btn-back {
+  background-color: #ffc107; /* Amarillo */
+  color: black;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.btn-back:hover {
+  background-color: #e0a800;
+}
+

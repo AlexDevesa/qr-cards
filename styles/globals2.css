@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #121212;
+  /* Fondo oscuro */
+  color: #ffffff;
+  /* Texto principal blanco */
+}
+
+input {
+  background-color: #1e1e1e;
+  /* Fondo oscuro pero no negro puro */
+  color: #ffffff;
+  /* Texto blanco */
+  border: 1px solid #3a3a3a;
+  /* Borde gris oscuro */
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+}
+
+input::placeholder {
+  color: #b3b3b3;
+  /* Texto de placeholder más claro */
+}
+
+button {
+  background-color: #007bff;
+  /* Azul brillante */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #0056b3;
+  /* Azul más oscuro en hover */
+}
