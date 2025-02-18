@@ -61,9 +61,29 @@ export default function ChangePassword() {
     }
   }, []);
 
+  // Función para validar la contraseña
+  function validatePassword(password: string): boolean {
+    const minLength = password.length >= 10;
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSymbol = /[^a-zA-Z\d]/.test(password);
+
+    return minLength && hasLowerCase && hasUpperCase && hasDigit && hasSymbol;
+  }
+
   async function handleChangePassword() {
     setMessage(null);
     setIsLoading(true);
+
+    if (!validatePassword(password)) {
+      setMessage({
+        text: "❌ La contraseña debe tener al menos 10 caracteres, incluyendo mayúsculas, minúsculas, números y símbolos.",
+        type: "error",
+      });
+      setIsLoading(false);
+      return;
+    }
 
     if (!captchaToken) {
       setMessage({ text: "❌ Debes completar la verificación CAPTCHA.", type: "error" });

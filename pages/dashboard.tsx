@@ -18,7 +18,8 @@ export default function Dashboard() {
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) {
         setErrorMessage("Debes iniciar sesión.");
-        return router.push("/login");
+        router.push("/login");
+        return;
       }
 
       const { data: usuarioData, error: usuarioError } = await supabase
@@ -30,7 +31,8 @@ export default function Dashboard() {
       if (usuarioError || !usuarioData) {
         setErrorMessage("No tienes un perfil registrado en la base de datos.");
         await supabase.auth.signOut();
-        return router.push("/login");
+        router.push("/login");
+        return;
       }
 
       setUsuario(authData.user);
@@ -63,23 +65,22 @@ export default function Dashboard() {
 
       setComerciales(comercialesData || []);
 
-      const { data: tarjetasData, error: tarjetasError } = await supabase
+      const { data: tarjetasData } = await supabase
         .from("tarjetas")
         .select("id, codigo, url_id, comercial_id, activa, usuarios (nombre)")
         .eq("empresa_id", empresaId);
 
       setTarjetas(tarjetasData || []);
 
-      
       const { data: adminsData } = await supabase
-      .from("usuarios")
-      .select("id, nombre, email")
-      .eq("empresa_id", empresaId)
-      .eq("rol", "admin");
+        .from("usuarios")
+        .select("id, nombre, email")
+        .eq("empresa_id", empresaId)
+        .eq("rol", "admin");
+
       setAdmins(adminsData || []);
     }
 
-  
     fetchUsuario();
   }, []);
 
@@ -191,9 +192,25 @@ export default function Dashboard() {
   return (
     <ProtectedRoute>
       <div className="p-6 min-h-screen bg-gray-900 text-gray-200">
+
         <div className="bg-gray-800 p-6 shadow-md rounded-lg">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-white">Panel de Administración</h1>
+              {/* Botones */}
+              <div className="mt-6 flex space-x-4">
+                <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onClick={() => router.push("/add_comercial")}>
+                  Añadir Comercial
+                </button>
+                <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded" onClick={() => router.push("/asignar_tarjetas")}>
+                  Asignar Tarjetas
+                </button>
+                <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onClick={() => router.push("/configuracion_empresa")}>
+                  Configuración de Empresa
+                </button>
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onClick={() => router.push("/perfil")}>
+                  Ver Perfil
+                </button>
+              </div>
             <Logout />
           </div>
 
@@ -327,21 +344,6 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* Botones */}
-              <div className="mt-6 flex space-x-4">
-                <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onClick={() => router.push("/add_comercial")}>
-                  Añadir Comercial
-                </button>
-                <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded" onClick={() => router.push("/asignar_tarjetas")}>
-                  Asignar Tarjetas
-                </button>
-                <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onClick={() => router.push("/configuracion_empresa")}>
-                  Configuración de Empresa
-                </button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onClick={() => router.push("/perfil")}>
-                  Ver Perfil
-                </button>
-              </div>
             </div>
           ) : (
             <p className="text-gray-400 mt-4">No tienes una empresa asignada.</p>

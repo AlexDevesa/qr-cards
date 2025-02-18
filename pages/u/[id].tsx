@@ -15,43 +15,8 @@ import {
 } from "react-icons/fa";
 import { obtenerURLsLecturaMultiples } from "../../lib/getUrls";
 import { registrarDescarga } from "../../lib/descarga";
-import { resizeImage } from "../../lib/resizeImage"; 
+import { handleDownloadVCF } from "../../lib/downloadVCard";
 
-
-// Convierte un Blob a base64
-async function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const base64 = dataUrl.split(",", 2)[1];
-      resolve(base64);
-    };
-    reader.readAsDataURL(blob);
-  });
-}
-
-// Separa el nombre en N y FN para iPhone
-function parseFullName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length === 1) {
-    // Solo un token => sin apellidos
-    const name = parts[0];
-    return {
-      nLine: `N:;${name};;;`,
-      fnLine: `FN:${name}`,
-    };
-  } else {
-    // El primer token es NOMBRE, el resto son apellidos
-    const [nombre, ...apellidos] = parts;
-    const joinedApellidos = apellidos.join(" ");
-    return {
-      nLine: `N:${joinedApellidos};${nombre};;;`,
-      fnLine: `FN:${fullName}`,
-    };
-  }
-}
 
 export default function Tarjeta() {
   const router = useRouter();
@@ -111,12 +76,14 @@ export default function Tarjeta() {
 
       setLoading(false);
 
-      // OPCIONAL: Registrar la visualización
+      // 4.Registrar la visualización
       if (tarjeta.id) {
-        registrarDescarga(tarjeta.id, "view");
-  //.catch((error) => console.error("No se pudo registrar la vista:", error));
+        registrarDescarga(tarjeta.id, "view").catch((error) =>
+          console.error("No se pudo registrar la vista:", error)
+        );
       }
     }
+    
     fetchData();
   }, [id]);
 
@@ -186,102 +153,9 @@ export default function Tarjeta() {
     document.body.removeChild(a);
   }
 
-  /**
-   * Genera y descarga la vCard
-   */
-  function foldLine(str: string, maxLength = 75): string {
-    const chunks: string[] = [];
-    let i = 0;
-    while (i < str.length) {
-      // Tomamos hasta maxLength caracteres
-      chunks.push(str.slice(i, i + maxLength));
-      i += maxLength;
-    }
-    // Unimos con "\r\n " (CRLF + espacio) según el estándar vCard
-    return chunks.join("\r\n ");
+  const handleVCard= async () => {
+    handleDownloadVCF(perfil, empresa, tarjetaId, id, presignedMap);
   }
-
-  const handleDownloadVCF = async () => {
-    
-    if (!perfil || !empresa) return;
-
-    // 1. Registrar la descarga en la tabla descargas
-    if (tarjetaId) {
-        await registrarDescarga(tarjetaId, "download");
-    }
-
-    // 2. Parsear nombre
-    const fullName = perfil.nombre?.trim() || "Invitado";
-    const { nLine, fnLine } = parseFullName(fullName);
-
-    // 3. Construir la vCard
-    let vcf = `BEGIN:VCARD
-VERSION:3.0
-${nLine}
-${fnLine}
-ORG:${empresa.nombre}
-TITLE:${perfil.puesto}
-TEL;TYPE=WORK,voice:${perfil.telefono}
-EMAIL;TYPE=WORK:${perfil.email}
-NOTE:Mi perfil para consultar novedades: https://qr.techversio.com/u/${id}
-URL:${perfil.website || ""}
-`;
-
-// 4. Descargar y redimensionar la imagen
-let fotoKey = perfil.foto_url || empresa.logo_url;
-if (fotoKey && presignedMap[fotoKey]) {
-  try {
-    const response = await fetch(presignedMap[fotoKey], {
-      mode: "cors",
-      credentials: "omit",
-      referrerPolicy: "no-referrer",
-    });
-    if (!response.ok) throw new Error(`No se pudo descargar la imagen: ${response.statusText}`);
-
-    const blob = await response.blob();
-    const contentType = response.headers.get("Content-Type") || "image/jpeg";
-
-    // Redimensionar
-    const resizedFile = await resizeImage(
-      new File([blob], "profile.jpeg", { type: contentType }),
-      0.1 // por ejemplo
-    );
-    const resizedBlob = new Blob([resizedFile], { type: "image/jpeg" });
-
-    // Convertir a base64
-    const base64 = await blobToBase64(resizedBlob);
-
-    // *Importantísimo* para iOS:
-    const foldedBase64 = foldLine(base64);
-
-    // Usar ENCODING=BASE64 y plegado de líneas
-    vcf += `PHOTO;TYPE=JPEG;ENCODING=BASE64:${foldedBase64}\r\n`;
-  } catch (err) {
-    console.error("Error al descargar/incrustar foto en la vCard:", err);
-  }
-}
-
-vcf += "END:VCARD";
-
-// 5. Descargar vCard
-try {
-  const blob = new Blob([vcf], { type: "text/vcard" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fullName.replace(/\s+/g, "_") + ".vcf";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  // Revocar URL temporal después de un tiempo
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-} catch (downloadError) {
-  console.error("Error al descargar la vCard:", downloadError);
-}
-};
-
 
 
   return (
@@ -407,7 +281,7 @@ try {
 
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded mt-6 w-full flex items-center justify-center"
-          onClick={handleDownloadVCF}
+          onClick={() => handleVCard()}
         >
           📥 Descargar Contacto
         </button>
