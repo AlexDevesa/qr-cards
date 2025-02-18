@@ -139,85 +139,102 @@ export default function ConfiguracionEmpresa() {
   return (
     <ProtectedRoute>
       <DarkContainer>
-        <div className="p-6">
+        {/* Título y Logout */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-white text-center md:text-left">Configuración de Empresa</h1>
           <Logout />
-          <h1 className="text-2xl font-bold mb-6">Configuración de Empresa</h1>
+        </div>
   
-          {message && (
-            <p className={`mt-4 p-2 rounded ${message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
-              {message.text}
-            </p>
-          )}
+        {/* Mensaje de éxito/error */}
+        {message && (
+          <p className={`p-3 rounded-md text-white text-center ${message.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
+            {message.text}
+          </p>
+        )}
   
-          {/* 📌 Campos de empresa */}
+        {/* 📌 Campos de empresa */}
+        <div className="bg-gray-700 shadow p-6 rounded-md w-full max-w-lg mx-auto">
+          <h2 className="text-xl font-bold text-white mb-4 text-center">Datos de la Empresa</h2>
           <div className="grid grid-cols-1 gap-4">
-            <label>Nombre de la Empresa</label>
+            <label className="text-white">Nombre de la Empresa</label>
             <input className="input-field" value={nombre} onChange={(e) => setNombre(e.target.value)} />
   
-            <label>Dirección</label>
+            <label className="text-white">Dirección</label>
             <input className="input-field" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
   
-            <label>Población</label>
+            <label className="text-white">Población</label>
             <input className="input-field" value={poblacion} onChange={(e) => setPoblacion(e.target.value)} />
   
-            <label>Código Postal</label>
+            <label className="text-white">Código Postal</label>
             <input className="input-field" value={codigoPostal} onChange={(e) => setCodigoPostal(e.target.value)} />
   
-            <label>CIF</label>
+            <label className="text-white">CIF</label>
             <input className="input-field" value={cif} onChange={(e) => setCIF(e.target.value)} />
   
-            <label>Teléfono</label>
+            <label className="text-white">Teléfono</label>
             <input className="input-field" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
   
-            <label>Web</label>
+            <label className="text-white">Web</label>
             <input className="input-field" value={web} onChange={(e) => setWeb(e.target.value)} />
-            <div className="flex space-x-4 mt-4">
-  <div>
-    <label className="text-white">Color Primario</label>
-    <input
-      type="color"
-      value={colorPrimario || "#000000"} // 🔹 Asegura que siempre haya un valor
-      onChange={(e) => setColorPrimario(e.target.value)}
-      className="w-full mt-2"
-    />
-    <p className="text-gray-400 mt-1">{colorPrimario}</p> {/* 🔹 Muestra el color seleccionado */}
-  </div>
-  <div>
-    <label className="text-white">Color Secundario</label>
-    <input
-      type="color"
-      value={colorSecundario || "#ffffff"} // 🔹 Asegura que siempre haya un valor
-      onChange={(e) => setColorSecundario(e.target.value)}
-      className="w-full mt-2"
-    />
-    <p className="text-gray-400 mt-1">{colorSecundario}</p> {/* 🔹 Muestra el color seleccionado */}
-  </div>
-</div>
-
-          </div>
   
-          {/* 📌 Logo de la empresa */}
-          <h2 className="text-lg font-bold mt-6">Logo de la Empresa</h2>
+            {/* Selector de colores */}
+            <div className="flex flex-col md:flex-row justify-between gap-4">
+              <div className="w-full">
+                <label className="text-white">Color Primario</label>
+                <input
+                  type="color"
+                  value={colorPrimario || "#000000"}
+                  onChange={(e) => setColorPrimario(e.target.value)}
+                  className="w-full h-10 rounded-md border border-gray-600 bg-gray-900"
+                />
+                <p className="text-gray-400 text-center mt-1">{colorPrimario}</p>
+              </div>
+  
+              <div className="w-full">
+                <label className="text-white">Color Secundario</label>
+                <input
+                  type="color"
+                  value={colorSecundario || "#ffffff"}
+                  onChange={(e) => setColorSecundario(e.target.value)}
+                  className="w-full h-10 rounded-md border border-gray-600 bg-gray-900"
+                />
+                <p className="text-gray-400 text-center mt-1">{colorSecundario}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        {/* 📌 Logo de la empresa */}
+        <div className="bg-gray-700 shadow p-6 rounded-md w-full max-w-lg mx-auto mt-6">
+          <h2 className="text-xl font-bold text-white text-center">Logo de la Empresa</h2>
           {logoUrl && (
-            <img src={logoUrl} alt="Logo de la empresa" className="w-32 h-32 object-cover border border-gray-600 rounded my-4" />
+            <div className="flex justify-center mt-4">
+              <img src={logoUrl} alt="Logo de la empresa" className="w-32 h-32 object-cover border border-gray-600 rounded" />
+            </div>
           )}
-          <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} />
-          <button className="btn-secondary mt-2" onClick={handleUploadLogo}>
+          <input
+            type="file"
+            accept="image/*"
+            className="mt-4 text-white"
+            onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+          />
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md mt-4 w-full" onClick={handleUploadLogo}>
             Subir Logo
           </button>
+        </div>
   
-          {/* 📌 Botones de acción */}
-          <div className="flex space-x-4 mt-6">
-            <button className="btn-primary" onClick={handleSave}>
-              Guardar Cambios
-            </button>
-            <button className="btn-back" onClick={() => router.push("/dashboard")}>
-              Volver
-            </button>
-          </div>
+        {/* 📌 Botones de acción */}
+        <div className="flex flex-col md:flex-row justify-center gap-4 mt-6">
+          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md w-full max-w-xs" onClick={handleSave}>
+            Guardar Cambios
+          </button>
+          <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md w-full max-w-xs" onClick={() => router.push("/dashboard")}>
+            Volver
+          </button>
         </div>
       </DarkContainer>
     </ProtectedRoute>
   );
+  
   
 }

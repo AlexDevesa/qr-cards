@@ -111,64 +111,95 @@ export default function AsignarTarjetas() {
   return (
     <ProtectedRoute>
       <DarkContainer>
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-white">Asignar y Desasignar Tarjetas</h1>
+        {/* Título y Logout */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-white text-center md:text-left">Asignar y Desasignar Tarjetas</h1>
           <Logout />
         </div>
-
+  
+        {/* Mensaje de éxito/error */}
         {message && (
-          <p className={`mt-4 p-2 rounded ${message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+          <p className={`p-3 rounded-md text-white text-center ${message.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
             {message.text}
           </p>
         )}
-
+  
         {/* ASIGNAR TARJETA */}
-        <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
-          <h2 className="text-xl font-bold text-white">Asignar Tarjeta a Usuario</h2>
-          <select className="border bg-gray-900 text-gray-200 p-2 w-full my-2" value={selectedTarjetaAsignar} onChange={(e) => setSelectedTarjetaAsignar(e.target.value)}>
-            <option value="">-- Seleccionar Tarjeta --</option>
-            {tarjetasSinAsignar.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.codigo} - {t.url_custom}
-              </option>
-            ))}
-          </select>
-
-          <select className="border bg-gray-900 text-gray-200 p-2 w-full my-2" value={selectedUsuario} onChange={(e) => setSelectedUsuario(e.target.value)}>
-            <option value="">-- Seleccionar Usuario --</option>
-            {usuarios.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.nombre} ({u.email}) - {u.rol.toUpperCase()}
-              </option>
-            ))}
-          </select>
-
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mt-2" onClick={handleAsignarTarjeta}>
+        <div className="mt-6 bg-gray-700 shadow p-6 rounded-md w-full max-w-lg mx-auto">
+          <h2 className="text-xl font-bold text-white text-center">Asignar Tarjeta a Usuario</h2>
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            <select
+              className="border bg-gray-900 text-gray-200 p-2 rounded-md w-full focus:ring-2 focus:ring-blue-500"
+              value={selectedTarjetaAsignar}
+              onChange={(e) => setSelectedTarjetaAsignar(e.target.value)}
+            >
+              <option value="">-- Seleccionar Tarjeta --</option>
+              {tarjetasSinAsignar.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.codigo} - {t.url_custom}
+                </option>
+              ))}
+            </select>
+  
+            <select
+              className="border bg-gray-900 text-gray-200 p-2 rounded-md w-full focus:ring-2 focus:ring-blue-500"
+              value={selectedUsuario}
+              onChange={(e) => setSelectedUsuario(e.target.value)}
+            >
+              <option value="">-- Seleccionar Usuario --</option>
+              {usuarios.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nombre} ({u.email}) - {u.rol.toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </div>
+  
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md mt-4 w-full"
+            onClick={handleAsignarTarjeta}
+          >
             Asignar Tarjeta
           </button>
         </div>
-
+  
         {/* DESASIGNAR TARJETA */}
-        <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
-          <h2 className="text-xl font-bold text-white">Desasignar Tarjeta</h2>
-          <select className="border bg-gray-900 text-gray-200 p-2 w-full my-2" value={selectedTarjetaDesasignar} onChange={(e) => setSelectedTarjetaDesasignar(e.target.value)}>
-            <option value="">-- Seleccionar Tarjeta --</option>
-            {tarjetasAsignadas.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.codigo} - {t.url_custom} ({t.usuarios ? `${t.usuarios.nombre} - ${t.usuarios.rol.toUpperCase()}` : "Desconocido"})
-              </option>
-            ))}
-          </select>
-
-          <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded mt-2" onClick={handleDesasignarTarjeta}>
+        <div className="mt-6 bg-gray-700 shadow p-6 rounded-md w-full max-w-lg mx-auto">
+          <h2 className="text-xl font-bold text-white text-center">Desasignar Tarjeta</h2>
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            <select
+              className="border bg-gray-900 text-gray-200 p-2 rounded-md w-full focus:ring-2 focus:ring-blue-500"
+              value={selectedTarjetaDesasignar}
+              onChange={(e) => setSelectedTarjetaDesasignar(e.target.value)}
+            >
+              <option value="">-- Seleccionar Tarjeta --</option>
+              {tarjetasAsignadas.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.codigo} - {t.url_custom} ({t.usuarios ? `${t.usuarios.nombre} - ${t.usuarios.rol.toUpperCase()}` : "Desconocido"})
+                </option>
+              ))}
+            </select>
+          </div>
+  
+          <button
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md mt-4 w-full"
+            onClick={handleDesasignarTarjeta}
+          >
             Desasignar Tarjeta
           </button>
         </div>
-
-        <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded mt-4" onClick={() => router.push("/dashboard")}>
-          Atrás
-        </button>
+  
+        {/* Botón de regreso */}
+        <div className="flex justify-center mt-6">
+          <button
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md shadow w-full max-w-xs"
+            onClick={() => router.push("/dashboard")}
+          >
+            Atrás
+          </button>
+        </div>
       </DarkContainer>
     </ProtectedRoute>
   );
+  
 }

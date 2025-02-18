@@ -87,37 +87,42 @@ export default function ForgotPassword() {
   }
 
   return (
-    <DarkContainer>
-      <h2 className="text-2xl font-bold text-center">Recuperar Contraseña</h2>
-
-      {message && (
-        <p
-          className={`mt-4 p-2 rounded text-center ${
-            message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-          }`}
-        >
-          {message.text}
-        </p>
-      )}
-
-      <input
-        type="email"
-        placeholder="Introduce tu email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="mt-4"
-      />
-
-      {/* Contenedor del CAPTCHA */}
-      <div id="captcha-container" className="mt-4"></div>
-
-      <button className="w-full mt-4" onClick={handlePasswordReset} disabled={isLoading}>
-        {isLoading ? "Enviando..." : "Enviar Instrucciones"}
-      </button>
-
-      <button className="w-full mt-2 bg-gray-600 hover:bg-gray-700" onClick={() => router.push("/login")}>
-        Volver al Login
-      </button>
-    </DarkContainer>
+      <DarkContainer>
+        <div className="p-6">
+          {/* Título */}
+          <h2 className="text-3xl font-bold text-white text-center mb-6">Recuperar Contraseña</h2>
+  
+          {/* 🔹 Mensaje de Éxito/Error */}
+          {message && (
+            <p className={`p-3 rounded text-white text-center ${message.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
+              {message.text}
+            </p>
+          )}
+  
+          {/* 📌 Campo de Email */}
+          <label className="text-white">Correo Electrónico</label>
+          <input
+            type="email"
+            className="input-field"
+            placeholder="Introduce tu email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+  
+          {/* 📌 Contenedor del CAPTCHA */}
+          <div id="captcha-container" className="mt-4"></div>
+  
+          {/* 📌 Botón Enviar Instrucciones */}
+          <button className="btn-primary w-full mt-6" onClick={handlePasswordReset} disabled={isLoading}>
+            {isLoading ? "Enviando..." : "Enviar Instrucciones"}
+          </button>
+  
+          {/* 📌 Botón Volver al Login */}
+          <button className="btn-back w-full mt-4" onClick={() => router.push("/login")}>
+            Volver al Login
+          </button>
+        </div>
+      </DarkContainer>
   );
+  
 }

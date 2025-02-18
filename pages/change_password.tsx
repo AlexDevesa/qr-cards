@@ -104,37 +104,39 @@ export default function ChangePassword() {
   }
 
   return (
-    <DarkContainer>
-      <h2 className="text-2xl font-bold text-center">Cambiar Contraseña</h2>
 
-      {message && (
-        <p
-          className={`mt-4 p-2 rounded text-center ${
-            message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-          }`}
-        >
-          {message.text}
-        </p>
-      )}
+      <DarkContainer>
+        <div className="p-6">
+          {/* Título */}
+          <h2 className="text-3xl font-bold text-white text-center mb-6">Cambiar Contraseña</h2>
+  
+          {/* 🔹 Mensaje de Éxito/Error */}
+          {message && (
+            <p className={`p-3 rounded text-white text-center ${message.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
+              {message.text}
+            </p>
+          )}
+  
+          {/* 📌 Campo de contraseña */}
+          <label className="text-white">Nueva Contraseña</label>
+          <input
+            className="input-field"
+            type="password"
+            placeholder="Ingrese nueva contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+  
+          {/* 📌 Contenedor del CAPTCHA */}
+          <div id="captcha-container" className="mt-4"></div>
+  
+          {/* 📌 Botón Guardar */}
+          <button className="btn-primary w-full mt-6" onClick={handleChangePassword} disabled={isLoading}>
+            {isLoading ? "Guardando..." : "Guardar Contraseña"}
+          </button>
+        </div>
+      </DarkContainer>
 
-      <input
-        className="border p-2 w-full my-2"
-        type="password"
-        placeholder="Nueva contraseña"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      {/* Contenedor del CAPTCHA */}
-      <div id="captcha-container" className="mt-4"></div>
-
-      <button
-        className="bg-blue-500 text-white px-4 py-2 mt-4 rounded w-full"
-        onClick={handleChangePassword}
-        disabled={isLoading}
-      >
-        {isLoading ? "Guardando..." : "Guardar Contraseña"}
-      </button>
-    </DarkContainer>
   );
+  
 }

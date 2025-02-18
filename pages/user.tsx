@@ -57,59 +57,66 @@ export default function UserPage() {
   return (
     <ProtectedRoute>
       <DarkContainer>
-        <div className="p-6">
+        {/* Título y Logout */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-white text-center md:text-left">Mis Tarjetas</h1>
           <Logout />
-          <h1 className="text-2xl font-bold mb-6">Mis Tarjetas</h1>
-
-          {/* Listado de tarjetas */}
-          {tarjetas.length > 0 ? (
-            <div className="grid gap-4">
-              {tarjetas.map((tarjeta) => (
-                <div key={tarjeta.id} className="border border-gray-700 p-4 rounded-lg bg-gray-900">
-                  <p><strong>Tarjeta:</strong> {tarjeta.codigo || "Sin nombre"}</p>
-                  <p>
-                    <strong>URL:</strong>{" "}
-                    <a
-                      href={`https://qr.techversio.com/u/${tarjeta.url_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 underline"
-                    >
-                      Abrir
-                    </a>
-                  </p>
-
-                  {/* Botón para generar QR */}
-                  <button
-                    className="bg-green-500 text-white px-4 py-2 rounded mt-3 hover:bg-green-600 transition"
-                    onClick={() => generarQR(tarjeta)}
+        </div>
+  
+        {/* Listado de tarjetas */}
+        {tarjetas.length > 0 ? (
+          <div className="grid gap-4">
+            {tarjetas.map((tarjeta) => (
+              <div key={tarjeta.id} className="bg-gray-800 shadow-md p-4 rounded-lg text-white">
+                <p><strong>Tarjeta:</strong> {tarjeta.codigo || "Sin nombre"}</p>
+                <p>
+                  <strong>URL:</strong>{" "}
+                  <a
+                    href={`https://qr.techversio.com/u/${tarjeta.url_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 underline"
                   >
-                    Crear QR
-                  </button>
-                </div>
-              ))}
-              {/* Botón para ir a la página de perfil */}
+                    Abrir
+                  </a>
+                </p>
+  
+                {/* Botón para generar QR */}
+                <button
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mt-3 w-full"
+                  onClick={() => generarQR(tarjeta)}
+                >
+                  Crear QR
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400 text-center">No tienes tarjetas asignadas.</p>
+        )}
+  
+        {/* Mostrar QR si se ha generado */}
+        {qrUrl && (
+          <div className="mt-8 text-center">
+            <h2 className="text-xl font-bold text-white mb-4">Código QR generado</h2>
+            <div className="bg-white p-4 rounded-md inline-block">
+              <QRCodeCanvas value={qrUrl} size={200} />
+            </div>
+            <p className="mt-4 text-gray-400">Escanea este código para acceder a la tarjeta.</p>
+          </div>
+        )}
+  
+        {/* Botón para ir a la página de perfil */}
+        <div className="flex justify-center mt-6">
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded mb-6 hover:bg-blue-600 transition"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md w-full max-w-xs"
             onClick={() => router.push("/perfil")}
           >
             Ver Perfil
           </button>
-            </div>
-          ) : (
-            <p className="text-gray-400">No tienes tarjetas asignadas.</p>
-          )}
-
-          {/* Mostrar QR si se ha generado */}
-          {qrUrl && (
-            <div className="mt-8 text-center">
-              <h2 className="text-xl font-bold mb-4">Código QR generado</h2>
-              <QRCodeCanvas value={qrUrl} size={200} className="mx-auto" />
-              <p className="mt-4 text-gray-400">Escanea este código para acceder a la tarjeta.</p>
-            </div>
-          )}
         </div>
       </DarkContainer>
     </ProtectedRoute>
   );
+  
 }

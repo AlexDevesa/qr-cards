@@ -419,17 +419,21 @@ export default function Perfil() {
     <ProtectedRoute>
       <DarkContainer>
         <div className="p-6">
-          <Logout />
-          <h1 className="text-xl font-bold mb-6">Editar Perfil</h1>
+          {/* Título y Logout */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-white text-center md:text-left">Editar Perfil</h1>
+            <Logout />
+          </div>
   
+          {/* Mensaje de éxito o error */}
           {message && (
-            <p className={`p-2 rounded ${message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+            <p className={`p-3 rounded text-white ${message.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
               {message.text}
             </p>
           )}
   
-          {/* 📌 Campos de usuario */}
-          <div className="grid grid-cols-1 gap-4">
+          {/* 📌 Campos del perfil */}
+          <div className="grid grid-cols-1 gap-4 mt-4">
             <label>Nombre</label>
             <input className="input-field" value={nombre} onChange={(e) => setNombre(e.target.value)} />
   
@@ -464,27 +468,27 @@ export default function Perfil() {
             <input className="input-field" value={website} onChange={(e) => setWebsite(e.target.value)} />
           </div>
   
-          {/* 📌 Guardar Cambios */}
-          <button className="btn-primary mt-4" onClick={handleSave}>
+          {/* 📌 Guardar cambios */}
+          <button className="btn-primary mt-4 w-full" onClick={handleSave}>
             Guardar Cambios
           </button>
   
-          {/* 📌 Foto de Perfil */}
+          {/* 📌 Foto de perfil */}
           <h2 className="text-lg font-bold mt-6">Foto de Perfil</h2>
           {fotoFirmada && (
-            <>
+            <div className="flex flex-col items-center">
               <img src={fotoFirmada} alt="Foto de perfil" className="w-32 h-32 object-cover border border-gray-600 rounded my-4" />
-              <button className="btn-danger mt-2" onClick={handleRemovePhoto}>
+              <button className="btn-danger w-full mt-2" onClick={handleRemovePhoto}>
                 Eliminar Foto
               </button>
-            </>
+            </div>
           )}
           <input type="file" accept="image/*" onChange={(e) => setFotoFile(e.target.files?.[0] || null)} />
-          <button className="btn-secondary mt-2" onClick={() => fotoFile && handleUpload(fotoFile, "perfil-fotos", "foto_url")}>
+          <button className="btn-secondary w-full mt-2" onClick={() => fotoFile && handleUpload(fotoFile, "perfil-fotos", "foto_url")}>
             Subir Foto
           </button>
   
-          {/* 📌 Galería de Imágenes */}
+          {/* 📌 Galería de imágenes */}
           <h2 className="text-lg font-bold mt-6">Galería de Imágenes</h2>
           {galeriaFirmada.length > 0 && (
             <div className="flex flex-wrap gap-4 my-2">
@@ -494,7 +498,7 @@ export default function Perfil() {
             </div>
           )}
           <input type="file" multiple accept="image/*" onChange={(e) => setGaleriaFiles(Array.from(e.target.files || []))} />
-          <button className="btn-secondary mt-2" onClick={() => galeriaFiles.length > 0 && handleUploadMultiple(galeriaFiles, "perfil-galeria", "galeria")}>
+          <button className="btn-secondary w-full mt-2" onClick={() => galeriaFiles.length > 0 && handleUploadMultiple(galeriaFiles, "perfil-galeria", "galeria")}>
             Subir Imágenes
           </button>
   
@@ -508,29 +512,23 @@ export default function Perfil() {
                 return (
                   <div key={vidKey} className="relative">
                     <video src={urlFirmada} controls className="w-64 h-auto rounded shadow" />
-                    <button
-                      className="absolute bottom-1 right-1 bg-white bg-opacity-70 rounded-full p-1 text-gray-800 hover:bg-opacity-90"
-                      onClick={() => handleDownloadMedia(urlFirmada, vidKey)}
-                    >
-                      <FaDownload />
-                    </button>
-                    <button
-                      className="absolute bottom-1 left-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
-                      onClick={() => handleRemoveVideo(vidKey)}
-                    >
-                      <FaTrash />
-                    </button>
+                    <div className="absolute bottom-2 right-2 flex gap-2">
+                      <button className="bg-white bg-opacity-70 rounded-full p-2 text-gray-800 hover:bg-opacity-90" onClick={() => handleDownloadMedia(urlFirmada, vidKey)}>
+                        <FaDownload />
+                      </button>
+                      <button className="bg-red-600 text-white rounded-full p-2 hover:bg-red-700" onClick={() => handleRemoveVideo(vidKey)}>
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
                 );
               })}
             </div>
           )}
           <input type="file" multiple accept="video/*" onChange={(e) => setVideoFiles(Array.from(e.target.files || []))} />
-          <button className="btn-secondary mt-2" onClick={() => videoFiles.length > 0 && handleUploadMultipleVideos(videoFiles)}>
+          <button className="btn-secondary w-full mt-2" onClick={() => videoFiles.length > 0 && handleUploadMultipleVideos(videoFiles)}>
             Subir Videos
           </button>
-
-
   
           {/* 📌 Documentos PDF */}
           <h2 className="text-lg font-bold mt-6">Documentos (PDF)</h2>
@@ -544,12 +542,12 @@ export default function Perfil() {
             </div>
           )}
           <input type="file" multiple accept="application/pdf" onChange={(e) => setPdfFiles(Array.from(e.target.files || []))} />
-          <button className="btn-secondary mt-2" onClick={() => pdfFiles.length > 0 && handleUploadMultiple(pdfFiles, "perfil-pdfs", "pdfs")}>
+          <button className="btn-secondary w-full mt-2" onClick={() => pdfFiles.length > 0 && handleUploadMultiple(pdfFiles, "perfil-pdfs", "pdfs")}>
             Subir PDFs
           </button>
   
           {/* 📌 Botón Atrás */}
-          <button className="btn-back mt-6" onClick={() => router.push("/user")}>
+          <button className="btn-back w-full mt-6" onClick={() => router.push("/user")}>
             Atrás
           </button>
         </div>

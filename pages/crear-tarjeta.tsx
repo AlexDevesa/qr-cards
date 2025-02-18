@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useRouter } from "next/router";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Logout from "../components/Logout";
+import DarkContainer from "../components/DarkContainer";
 
 export default function CrearTarjeta() {
   const router = useRouter();
@@ -71,39 +72,48 @@ export default function CrearTarjeta() {
 
   return (
     <ProtectedRoute>
-      <div className="p-6">
-        <Logout />
-        <h1 className="text-2xl font-bold">Registrar Nueva Tarjeta</h1>
-
-        {/* 🔹 Mensaje de Éxito/Error */}
-        {message && (
-          <p className={`mt-4 p-2 rounded ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-            {message.text}
-          </p>
-        )}
-
-        {/* 🔹 Selección de Empresa */}
-        <select className="border p-2 w-full my-2" onChange={(e) => setEmpresaId(e.target.value)} value={empresaId}>
-          <option value="">Seleccione una empresa</option>
-          {empresas.map((empresa) => (
-            <option key={empresa.id} value={empresa.id}>
-              {empresa.nombre}
-            </option>
-          ))}
-        </select>
-
-        {/* 🔹 Código de Tarjeta */}
-        <input className="border p-2 w-full my-2" placeholder="Código único de la tarjeta" onChange={(e) => setCodigo(e.target.value)} />
-
-        <div className="flex space-x-4">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleCrearTarjeta} disabled={isLoading}>
-            {isLoading ? "Creando..." : "Crear Tarjeta"}
-          </button>
-          <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => router.push("/admin")}>
-            Atrás
-          </button>
+      <DarkContainer>
+        <div className="p-6">
+          {/* Título y Logout */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-white text-center md:text-left">Registrar Nueva Tarjeta</h1>
+            <Logout />
+          </div>
+  
+          {/* 🔹 Mensaje de Éxito/Error */}
+          {message && (
+            <p className={`p-3 rounded text-white ${message.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
+              {message.text}
+            </p>
+          )}
+  
+          {/* 📌 Selección de Empresa */}
+          <label className="text-white">Seleccione una empresa</label>
+          <select className="input-field" onChange={(e) => setEmpresaId(e.target.value)} value={empresaId}>
+            <option value="">Seleccione una empresa</option>
+            {empresas.map((empresa) => (
+              <option key={empresa.id} value={empresa.id}>
+                {empresa.nombre}
+              </option>
+            ))}
+          </select>
+  
+          {/* 📌 Código de Tarjeta */}
+          <label className="text-white">Código único de la tarjeta</label>
+          <input className="input-field" placeholder="Ingrese el código" onChange={(e) => setCodigo(e.target.value)} />
+  
+          {/* 📌 Botones de acción */}
+          <div className="flex flex-col md:flex-row gap-4 mt-6">
+            <button className="btn-primary w-full md:w-auto" onClick={handleCrearTarjeta} disabled={isLoading}>
+              {isLoading ? "Creando..." : "Crear Tarjeta"}
+            </button>
+            <button className="btn-back w-full md:w-auto" onClick={() => router.push("/admin")}>
+              Atrás
+            </button>
+          </div>
         </div>
-      </div>
+      </DarkContainer>
     </ProtectedRoute>
   );
+  
 }

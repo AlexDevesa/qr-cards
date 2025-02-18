@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useRouter } from "next/router";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Logout from "../components/Logout";
+import DarkContainer from "../components/DarkContainer";
 
 export default function CrearEmpresa() {
   const router = useRouter();
@@ -99,31 +100,41 @@ export default function CrearEmpresa() {
 
   return (
     <ProtectedRoute>
-      <div className="p-6">
-        <Logout />
-        <h1 className="text-2xl font-bold">Registrar Nueva Empresa</h1>
-
-        {/* 🔹 Mensaje de Éxito/Error */}
-        {message && (
-          <p className={`mt-4 p-2 rounded ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-            {message.text}
-          </p>
-        )}
-
-        <input className="border p-2 w-full my-2" placeholder="Nombre de la Empresa" onChange={(e) => setNombreEmpresa(e.target.value)} />
-        <input className="border p-2 w-full my-2" placeholder="Nombre del Administrador" onChange={(e) => setNombreAdmin(e.target.value)} />
-        <input className="border p-2 w-full my-2" placeholder="Email del Administrador" onChange={(e) => setEmailAdmin(e.target.value)} />
-        <input className="border p-2 w-full my-2" type="password" placeholder="Contraseña del Administrador" onChange={(e) => setPasswordAdmin(e.target.value)} />
-
-        <div className="flex space-x-4">
-          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleCrearEmpresa} disabled={isLoading}>
-            {isLoading ? "Creando..." : "Crear Empresa"}
-          </button>
-          <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => router.push("/admin")}>
-            Atrás
-          </button>
+      <DarkContainer>
+        <div className="p-6">
+          {/* Título y Logout */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-white text-center md:text-left">Registrar Nueva Empresa</h1>
+            <Logout />
+          </div>
+  
+          {/* 🔹 Mensaje de Éxito/Error */}
+          {message && (
+            <p className={`p-3 rounded text-white ${message.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
+              {message.text}
+            </p>
+          )}
+  
+          {/* 📌 Formulario de Registro */}
+          <div className="grid grid-cols-1 gap-4">
+            <input className="input-field" placeholder="Nombre de la Empresa" onChange={(e) => setNombreEmpresa(e.target.value)} />
+            <input className="input-field" placeholder="Nombre del Administrador" onChange={(e) => setNombreAdmin(e.target.value)} />
+            <input className="input-field" placeholder="Email del Administrador" onChange={(e) => setEmailAdmin(e.target.value)} />
+            <input className="input-field" type="password" placeholder="Contraseña del Administrador" onChange={(e) => setPasswordAdmin(e.target.value)} />
+          </div>
+  
+          {/* 📌 Botones de acción */}
+          <div className="flex flex-col md:flex-row gap-4 mt-6">
+            <button className="btn-primary w-full md:w-auto" onClick={handleCrearEmpresa} disabled={isLoading}>
+              {isLoading ? "Creando..." : "Crear Empresa"}
+            </button>
+            <button className="btn-back w-full md:w-auto" onClick={() => router.push("/admin")}>
+              Atrás
+            </button>
+          </div>
         </div>
-      </div>
+      </DarkContainer>
     </ProtectedRoute>
   );
+  
 }

@@ -5,11 +5,11 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Logout from "../components/Logout";
 
 export default function AdminPanel() {
-  
   const router = useRouter();
   const [empresas, setEmpresas] = useState<any[]>([]);
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const [tarjetas, setTarjetas] = useState<any[]>([]);
+  const [descargas, setDescargas] = useState<any[]>([]);
   const [isRoot, setIsRoot] = useState(false);
 
   useEffect(() => {
@@ -52,13 +52,17 @@ export default function AdminPanel() {
       if (usuariosError) console.error("Error obteniendo usuarios:", usuariosError.message);
       setUsuarios(usuariosData || []);
 
-      // 🔹 Obtener TODAS las tarjetas sin importar la empresa
+      // 🔹 Obtener Tarjetas
       const { data: tarjetasData, error: tarjetasError } = await supabase
         .from("tarjetas")
-        .select("id, url_custom, empresa_id, comercial_id, empresas(nombre), usuarios(nombre, email)");
+        .select("id, codigo, url_custom, empresa_id, comercial_id, activa, empresas(nombre), usuarios(nombre, email)");
 
-      if (tarjetasError) console.error("Error obteniendo tarjetas:", tarjetasError.message);
       setTarjetas(tarjetasData || []);
+
+      
+      // Obtener Descargas (visitas y descargas)
+      const { data: descargasData } = await supabase.from("descargas").select("id, tarjeta_id, tipo");
+      setDescargas(descargasData || []);
     }
 
     fetchData();
@@ -76,66 +80,134 @@ export default function AdminPanel() {
 
   return (
     <ProtectedRoute>
-      <div className="p-6">
-        <Logout />
-        <h1 className="text-2xl font-bold">Panel de Root</h1>
-
-        {/* 🔹 Opciones */}
-        <div className="mt-6">
-          <h2 className="text-xl font-bold">Opciones</h2>
-          <button className="bg-green-500 text-white px-4 py-2 mt-2 rounded" onClick={() => router.push("/crear-empresa")}>
-            Registrar Nueva Empresa
-          </button>
-          <button className="bg-blue-500 text-white px-4 py-2 mt-2 rounded ml-2" onClick={() => router.push("/crear-tarjeta")}>
-            Registrar Nueva Tarjeta
-          </button>
+      <div className="p-6 min-h-screen bg-gray-900 text-gray-200">
+        
+        {/* Título y Botones */}
+        <div className="bg-gray-800 p-6 shadow-md rounded-lg">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <h1 className="text-3xl font-bold text-white mb-4 md:mb-0">Panel de Root</h1>
+            <div className="flex flex-wrap gap-2">
+              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" onClick={() => router.push("/crear-empresa")}>
+                Registrar Empresa
+              </button>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onClick={() => router.push("/crear-tarjeta")}>
+                Registrar Tarjeta
+              </button>
+            </div>
+            <Logout />
+          </div>
         </div>
-
-        {/* 🔹 Empresas */}
-        <h2 className="text-xl mt-6 font-bold">Empresas</h2>
-        {empresas.length > 0 ? (
-          <ul className="list-disc pl-6">
-            {empresas.map((e) => (
-              <li key={e.id}>{e.nombre} (ID: {e.id})</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No hay empresas registradas.</p>
-        )}
-
-        {/* 🔹 Usuarios */}
-        <h2 className="text-xl mt-6 font-bold">Usuarios (Admins y Comerciales)</h2>
-        {usuarios.length > 0 ? (
-          <ul className="list-disc pl-6">
-            {usuarios.map((u) => (
-              <li key={u.id}>
-                <strong>{u.nombre}</strong> ({u.email}) - {u.rol.toUpperCase()} - Empresa: {u.empresas?.nombre || "Sin asignar"} - 
-                {u.activo ? <span className="text-green-500"> Activo</span> : <span className="text-red-500"> Inactivo</span>}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No hay usuarios registrados.</p>
-        )}
-
-        {/* 🔹 Tarjetas */}
-        <h2 className="text-xl mt-6 font-bold">Tarjetas</h2>
-        {tarjetas.length > 0 ? (
-          <ul className="list-disc pl-6">
-            {tarjetas.map((t) => (
-              <li key={t.id}>
-                <strong>URL:</strong> <a href={`https://qr.techversio.com/u/${t.url_custom}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{t.url_custom}</a>  
-                <br />
-                <strong>Empresa:</strong> {t.empresas?.nombre || "Sin asignar"}  
-                <br />
-                <strong>Comercial:</strong> {t.usuarios?.nombre || "No asignado"} ({t.usuarios?.email || "N/A"})
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No hay tarjetas registradas.</p>
-        )}
+  
+        {/* Empresas */}
+        <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
+          <h2 className="text-xl font-bold text-white">Empresas</h2>
+          {empresas.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto border-collapse my-4 text-gray-300">
+                <thead>
+                  <tr className="bg-gray-600 text-gray-200">
+                    <th className="border px-4 py-2">Nombre</th>
+                    <th className="border px-4 py-2">ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {empresas.map((e) => (
+                    <tr key={e.id} className="text-center bg-gray-800 hover:bg-gray-700">
+                      <td className="border px-4 py-2">{e.nombre}</td>
+                      <td className="border px-4 py-2">{e.id}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-400">No hay empresas registradas.</p>
+          )}
+        </div>
+  
+        {/* Usuarios */}
+        <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
+          <h2 className="text-xl font-bold text-white">Usuarios</h2>
+          {usuarios.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto border-collapse my-4 text-gray-300">
+                <thead>
+                  <tr className="bg-gray-600 text-gray-200">
+                    <th className="border px-4 py-2">Nombre</th>
+                    <th className="border px-4 py-2">Email</th>
+                    <th className="border px-4 py-2">Rol</th>
+                    <th className="border px-4 py-2">Empresa</th>
+                    <th className="border px-4 py-2">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usuarios.map((u) => (
+                    <tr key={u.id} className="text-center bg-gray-800 hover:bg-gray-700">
+                      <td className="border px-4 py-2">{u.nombre}</td>
+                      <td className="border px-4 py-2">{u.email}</td>
+                      <td className="border px-4 py-2">{u.rol.toUpperCase()}</td>
+                      <td className="border px-4 py-2">{u.empresas?.nombre || "Sin asignar"}</td>
+                      <td className="border px-4 py-2">
+                        <span className={`inline-block px-3 py-1 rounded-full text-white ${u.activo ? "bg-green-500" : "bg-red-500"}`}>
+                          {u.activo ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-400">No hay usuarios registrados.</p>
+          )}
+        </div>
+  
+        {/* Tarjetas */}
+        <div className="mt-6 bg-gray-700 shadow p-4 rounded-md">
+          <h2 className="text-xl font-bold text-white">Tarjetas</h2>
+          {tarjetas.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto border-collapse my-4 text-gray-300">
+                <thead>
+                  <tr className="bg-gray-600 text-gray-200 text-sm md:text-base">
+                    <th className="border px-2 md:px-4 py-2">Código</th>
+                    <th className="border px-2 md:px-4 py-2">URL</th>
+                    <th className="border px-2 md:px-4 py-2">Empresa</th>
+                    <th className="border px-2 md:px-4 py-2">Comercial</th>
+                    <th className="border px-2 md:px-4 py-2">Estado</th>
+                    <th className="border px-2 md:px-4 py-2">Visitas</th>
+                    <th className="border px-2 md:px-4 py-2">Descargas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tarjetas.map((t) => (
+                    <tr key={t.id} className="text-center bg-gray-800 hover:bg-gray-700 text-sm md:text-base">
+                      <td className="border px-2 md:px-4 py-2">{t.codigo}</td>
+                      <td className="border px-2 md:px-4 py-2">
+                        <a href={`https://qr.techversio.com/u/${t.url_custom}`} className="text-blue-400 underline">
+                          {t.url_custom}
+                        </a>
+                      </td>
+                      <td className="border px-2 md:px-4 py-2">{t.empresas?.nombre || "N/A"}</td>
+                      <td className="border px-2 md:px-4 py-2">{t.usuarios?.nombre || "No asignado"}</td>
+                      <td className="border px-2 md:px-4 py-2">
+                        <span className={`inline-block px-3 py-1 rounded-full text-white ${t.activa ? "bg-green-500" : "bg-red-500"}`}>
+                          {t.activa ? "Activa" : "Inactiva"}
+                        </span>
+                      </td>
+                      <td className="border px-2 md:px-4 py-2">{descargas.filter((d) => d.tarjeta_id === t.id && d.tipo === "view").length}</td>
+                      <td className="border px-2 md:px-4 py-2">{descargas.filter((d) => d.tarjeta_id === t.id && d.tipo === "download").length}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-400">No hay tarjetas registradas.</p>
+          )}
+        </div>
+  
       </div>
     </ProtectedRoute>
   );
-}
+}  
