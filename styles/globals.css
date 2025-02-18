@@ -37,7 +37,7 @@ button.error {
 
 /* Estilo de los títulos */
 h1, h2 {
-  @apply font-bold text-gray-900 dark:text-white;
+  @apply text-white;
 }
 
 

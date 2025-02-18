@@ -61,14 +61,6 @@ export default function UserPage() {
           <Logout />
           <h1 className="text-2xl font-bold mb-6">Mis Tarjetas</h1>
 
-          {/* Botón para ir a la página de perfil */}
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded mb-6 hover:bg-blue-600 transition"
-            onClick={() => router.push("/perfil")}
-          >
-            Ver Perfil
-          </button>
-
           {/* Listado de tarjetas */}
           {tarjetas.length > 0 ? (
             <div className="grid gap-4">
@@ -96,6 +88,13 @@ export default function UserPage() {
                   </button>
                 </div>
               ))}
+              {/* Botón para ir a la página de perfil */}
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded mb-6 hover:bg-blue-600 transition"
+            onClick={() => router.push("/perfil")}
+          >
+            Ver Perfil
+          </button>
             </div>
           ) : (
             <p className="text-gray-400">No tienes tarjetas asignadas.</p>

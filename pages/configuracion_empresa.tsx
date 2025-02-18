@@ -5,7 +5,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Logout from "../components/Logout";
 import { obtenerURLSubida } from "../lib/upload";
 import DarkContainer from "../components/DarkContainer"; 
-
+import { obtenerURLsLecturaMultiples } from "../lib/getUrls";
 
 export default function ConfiguracionEmpresa() {
   const router = useRouter();
@@ -58,7 +58,18 @@ export default function ConfiguracionEmpresa() {
         setWeb(empresaData.web || "");
         setColorPrimario(empresaData.color_primario || "#000000");
         setColorSecundario(empresaData.color_secundario || "#FFFFFF");
-        setLogoUrl(empresaData.logo_url ? `https://adevesa-qr.s3.amazonaws.com/${empresaData.logo_url}` : null);
+        if (empresaData.logo_url) {
+          try {
+            const urlsFirmadas = await obtenerURLsLecturaMultiples([empresaData.logo_url]);
+            if (urlsFirmadas.length > 0) {
+              setLogoUrl(urlsFirmadas[0].get_url);
+            } else {
+              console.error("No se obtuvo URL firmada para el logo.");
+            }
+          } catch (err) {
+            console.error("Error al obtener URL firmada:", err);
+          }
+        }
       } else {
         setMessage({ text: "Error al cargar la empresa.", type: "error" });
       }
@@ -98,6 +109,7 @@ export default function ConfiguracionEmpresa() {
       setMessage({ text: error instanceof Error ? error.message : "Error desconocido", type: "error" });
     }
   }
+  
 
   async function handleSave() {
     if (!empresa) return;
@@ -159,6 +171,29 @@ export default function ConfiguracionEmpresa() {
   
             <label>Web</label>
             <input className="input-field" value={web} onChange={(e) => setWeb(e.target.value)} />
+            <div className="flex space-x-4 mt-4">
+  <div>
+    <label className="text-white">Color Primario</label>
+    <input
+      type="color"
+      value={colorPrimario || "#000000"} // 🔹 Asegura que siempre haya un valor
+      onChange={(e) => setColorPrimario(e.target.value)}
+      className="w-full mt-2"
+    />
+    <p className="text-gray-400 mt-1">{colorPrimario}</p> {/* 🔹 Muestra el color seleccionado */}
+  </div>
+  <div>
+    <label className="text-white">Color Secundario</label>
+    <input
+      type="color"
+      value={colorSecundario || "#ffffff"} // 🔹 Asegura que siempre haya un valor
+      onChange={(e) => setColorSecundario(e.target.value)}
+      className="w-full mt-2"
+    />
+    <p className="text-gray-400 mt-1">{colorSecundario}</p> {/* 🔹 Muestra el color seleccionado */}
+  </div>
+</div>
+
           </div>
   
           {/* 📌 Logo de la empresa */}

@@ -128,27 +128,29 @@ export default function Perfil() {
   useEffect(() => {
     async function fetchVideoFirmado() {
       if (!perfil?.video_url || !Array.isArray(perfil.video_url) || perfil.video_url.length === 0) {
-        setVideoFirmada(null);
+        setPresignedMap({});
         return;
       }
-  
+
       try {
-        // Pedimos las URLs firmadas de todos los videos
         const result = await obtenerURLsLecturaMultiples(perfil.video_url);
-  
         if (Array.isArray(result) && result.length > 0) {
-          // Guardamos la primera URL de video (puedes cambiar la lógica si necesitas más)
-          setVideoFirmada(result[0].get_url);
+          const newMap = result.reduce((acc, item) => {
+            acc[item.file_key] = item.get_url;
+            return acc;
+          }, {} as { [key: string]: string });
+
+          setPresignedMap(newMap);
         } else {
           console.error("No se obtuvo una URL firmada para los videos.");
-          setVideoFirmada(null);
+          setPresignedMap({});
         }
       } catch (error) {
         console.error("Error al obtener la URL firmada del video:", error);
-        setVideoFirmada(null);
+        setPresignedMap({});
       }
     }
-  
+
     fetchVideoFirmado();
   }, [perfil?.video_url]);
   

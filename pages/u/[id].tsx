@@ -122,25 +122,34 @@ export default function Tarjeta() {
 
   // Al tener perfil y empresa, reunir fileKeys y pedir presigned GET
   useEffect(() => {
-    if (!perfil || !empresa) return;
-
-    const fileKeys: string[] = [];
-    if (empresa.logo_url) fileKeys.push(empresa.logo_url);
-    if (perfil.foto_url) fileKeys.push(perfil.foto_url);
-    if (Array.isArray(perfil.galeria)) fileKeys.push(...perfil.galeria);
-    if (Array.isArray(perfil.videos)) fileKeys.push(...perfil.videos);
-    if (Array.isArray(perfil.pdfs)) fileKeys.push(...perfil.pdfs);
-
-    if (fileKeys.length === 0) return;
-
     async function fetchPresigned() {
-      const result = await obtenerURLsLecturaMultiples(fileKeys);
-      const map: { [key: string]: string } = {};
-      result.forEach((item) => {
-        map[item.file_key] = item.get_url;
-      });
-      setPresignedMap(map);
+      if (!perfil || !empresa) return;
+
+      const fileKeys: string[] = [];
+      if (empresa.logo_url) fileKeys.push(empresa.logo_url);
+      if (perfil.foto_url) fileKeys.push(perfil.foto_url);
+      if (Array.isArray(perfil.galeria)) fileKeys.push(...perfil.galeria);
+      if (Array.isArray(perfil.video_url)) fileKeys.push(...perfil.video_url);
+      if (Array.isArray(perfil.pdfs)) fileKeys.push(...perfil.pdfs);
+
+      if (fileKeys.length === 0) return;
+
+      try {
+        //console.log("Solicitando URLs firmadas para:", fileKeys);
+        const result = await obtenerURLsLecturaMultiples(fileKeys);
+        //console.log("Respuesta de obtenerURLsLecturaMultiples:", result);
+
+        const map: { [key: string]: string } = {};
+        result.forEach((item) => {
+          map[item.file_key] = item.get_url;
+        });
+
+        setPresignedMap(map);
+      } catch (error) {
+        //console.error("Error obteniendo URLs firmadas:", error);
+      }
     }
+
     fetchPresigned();
   }, [perfil, empresa]);
 
@@ -149,11 +158,11 @@ export default function Tarjeta() {
 
   // Arrays
   const galeria = Array.isArray(perfil.galeria) ? perfil.galeria : [];
-  const videos = Array.isArray(perfil.videos) ? perfil.videos : [];
+  const videos = Array.isArray(perfil.video_url) ? perfil.video_url : [];
   const pdfs = Array.isArray(perfil.pdfs) ? perfil.pdfs : [];
 
   // Colores
-  const fondoPrimario = empresa.color_primario || "#ffffff";
+  const fondoPrimario = empresa.color_primario || "#182438";
   const colorSecundario = empresa.color_secundario || "#000000";
 
   /** Abre el lightbox */
@@ -436,37 +445,48 @@ try {
         </div>
       )}
 
-      {/* Videos */}
-      {Array.isArray(perfil.videos) && perfil.videos.length > 0 && (
-        <div className="bg-white text-black p-6 rounded-lg shadow-lg w-full max-w-md mt-6">
-          <h2 className="text-xl font-bold mb-4 text-center">Videos</h2>
-          <div className="flex flex-col space-y-4 items-center">
-            {perfil.videos.map((vidKey: string) => {
-              const urlFirmada = presignedMap[vidKey];
-              if (!urlFirmada) return null;
-              return (
-                <div key={vidKey} className="relative">
-                  <video
-                    src={urlFirmada}
-                    controls
-                    className="w-64 h-auto rounded shadow cursor-pointer"
-                    onClick={() => openLightbox(urlFirmada)}
-                  />
-                  <button
-                    className="absolute bottom-1 right-1 bg-white bg-opacity-70 rounded-full p-1 text-gray-800 hover:bg-opacity-90"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownloadMedia(urlFirmada, vidKey);
-                    }}
-                  >
-                    <FaDownload />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+
+      {/* 📌 Videos */}
+      {Array.isArray(perfil.video_url) && perfil.video_url.length > 0 && Object.keys(presignedMap).length > 0 && (
+      <div className="bg-white text-black p-6 rounded-lg shadow-lg w-full max-w-md mt-6">
+        <h2 className="text-xl font-bold mb-4 text-center">Videos</h2>
+        <div className="flex flex-col space-y-4 items-center">
+          {perfil.video_url.map((vidKey: string) => {
+            const urlFirmada = presignedMap[vidKey];
+
+            if (!urlFirmada) {
+              console.warn(`No se encontró URL firmada para ${vidKey}`);
+              return null;
+            }
+
+            return (
+              <div key={vidKey} className="relative">
+                <video
+                  src={urlFirmada}
+                  controls
+                  className="w-64 h-auto rounded shadow cursor-pointer"
+                />
+                <button
+                  className="absolute bottom-1 right-1 bg-white bg-opacity-70 rounded-full p-1 text-gray-800 hover:bg-opacity-90"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const a = document.createElement("a");
+                    a.href = urlFirmada;
+                    a.download = vidKey.split("/").pop() || "video";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  }}
+                >
+                  <FaDownload />
+                </button>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
+    )}
+
 
       {/* PDFs */}
       {Array.isArray(perfil.pdfs) && perfil.pdfs.length > 0 && (

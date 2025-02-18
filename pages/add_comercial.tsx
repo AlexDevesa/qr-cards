@@ -78,35 +78,66 @@ export default function AddComercial() {
 
   return (
     <ProtectedRoute>
-      <div className="p-6">
-        <Logout />
-        <h1 className="text-2xl font-bold mb-4">Añadir Comercial</h1>
+      <div className="p-6 min-h-screen bg-gray-900 text-gray-200">
+        <div className="bg-gray-800 p-6 shadow-md rounded-lg">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-white">Añadir Comercial</h1>
+            <Logout />
+          </div>
   
-        {message && (
-          <p className={`p-2 rounded ${message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
-            {message.text}
-          </p>
-        )}
+          {/* Mensaje de éxito/error */}
+          {message && (
+            <p
+              className={`p-3 rounded-md text-white ${
+                message.type === "success" ? "bg-green-500" : "bg-red-500"
+              }`}
+            >
+              {message.text}
+            </p>
+          )}
   
-        {/* Formulario de creación */}
-        <div className="grid grid-cols-1 gap-4">
-          <input className="input-field" placeholder="Nombre" onChange={(e) => setNombre(e.target.value)} />
-          <input className="input-field" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-          <input className="input-field" type="password" placeholder="Contraseña" onChange={(e) => setPassword(e.target.value)} />
-        </div>
+          {/* Formulario de creación */}
+          <div className="mt-4 bg-gray-700 p-6 shadow rounded-md">
+            <h2 className="text-xl font-bold text-white mb-4">Datos del Comercial</h2>
+            <div className="grid grid-cols-1 gap-4">
+              <input
+                className="bg-gray-800 text-white p-2 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Nombre"
+                onChange={(e) => setNombre(e.target.value)}
+              />
+              <input
+                className="bg-gray-800 text-white p-2 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Email"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                className="bg-gray-800 text-white p-2 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="password"
+                placeholder="Contraseña"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
   
-        {/* Botones */}
-        <div className="flex gap-4 mt-4">
-          <button className="btn-success" onClick={handleCrearComercial} disabled={isLoading}>
-            {isLoading ? "Creando..." : "Crear Comercial"}
-          </button>
+          {/* Botones */}
+          <div className="flex gap-4 mt-6">
+            <button
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow"
+              onClick={handleCrearComercial}
+              disabled={isLoading}
+            >
+              {isLoading ? "Creando..." : "Crear Comercial"}
+            </button>
   
-          <button className="btn-back" onClick={() => router.push("/dashboard")}>
-            Atrás
-          </button>
+            <button
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md shadow"
+              onClick={() => router.push("/dashboard")}
+            >
+              Atrás
+            </button>
+          </div>
         </div>
       </div>
     </ProtectedRoute>
   );
-  
-}
+}  
