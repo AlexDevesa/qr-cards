@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/router";
-import Script from "next/script";
+import DarkContainer from "../components/DarkContainer";
 
 // Definir la propiedad global en window para el callback de Turnstile
 declare global {
   interface Window {
     turnstileCallback?: (token: string) => void;
+    turnstile?: any;
   }
 }
 
@@ -14,18 +15,50 @@ export default function ChangePassword() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(""); // Estado para el token de Turnstile
+  const [captchaToken, setCaptchaToken] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    // Definir el callback de Turnstile
-    window.turnstileCallback = function (token: string) {
+    window.turnstileCallback = (token: string) => {
       setCaptchaToken(token);
     };
 
     return () => {
-      delete window.turnstileCallback; // Limpiar referencia al desmontar
+      delete window.turnstileCallback;
     };
+  }, []);
+
+  useEffect(() => {
+    // Verificar si el script ya está en el documento
+    if (!document.getElementById("turnstile-script")) {
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      script.async = true;
+      script.defer = true;
+      script.id = "turnstile-script";
+
+      script.onload = () => {
+        if (window.turnstile && !document.querySelector(".cf-turnstile")) {
+          window.turnstile.render("#captcha-container", {
+            sitekey: "0x4AAAAAAA9J_DKlwm-1EcKR",
+            callback: window.turnstileCallback,
+            theme: "dark",
+          });
+        }
+      };
+
+      document.body.appendChild(script);
+    } else {
+      if (window.turnstile && !document.querySelector(".cf-turnstile")) {
+        setTimeout(() => {
+          window.turnstile.render("#captcha-container", {
+            sitekey: "0x4AAAAAAA9J_DKlwm-1EcKR",
+            callback: window.turnstileCallback,
+            theme: "dark",
+          });
+        }, 500);
+      }
+    }
   }, []);
 
   async function handleChangePassword() {
@@ -51,41 +84,37 @@ export default function ChangePassword() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      {/* Cargar el script de Turnstile */}
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
-
-      <h2 className="text-2xl font-bold">Cambiar Contraseña</h2>
+    <DarkContainer>
+      <h2 className="text-2xl font-bold text-center">Cambiar Contraseña</h2>
 
       {message && (
-        <p className={`mt-4 p-2 rounded ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+        <p
+          className={`mt-4 p-2 rounded text-center ${
+            message.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          }`}
+        >
           {message.text}
         </p>
       )}
 
       <input
-        className="border p-2 w-80 my-2"
+        className="border p-2 w-full my-2"
         type="password"
         placeholder="Nueva contraseña"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      {/* Captcha de Cloudflare Turnstile */}
-      <div
-        className="cf-turnstile mt-4"
-        data-sitekey="0x4AAAAAAA9J_DKlwm-1EcKR"
-        data-callback="turnstileCallback"
-        data-theme="dark"
-      ></div>
+      {/* Contenedor del CAPTCHA */}
+      <div id="captcha-container" className="mt-4"></div>
 
       <button
-        className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
+        className="bg-blue-500 text-white px-4 py-2 mt-4 rounded w-full"
         onClick={handleChangePassword}
         disabled={isLoading}
       >
         {isLoading ? "Guardando..." : "Guardar Contraseña"}
       </button>
-    </div>
+    </DarkContainer>
   );
 }

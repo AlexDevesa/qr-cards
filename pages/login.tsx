@@ -69,7 +69,14 @@ export default function Login() {
     }
 
     setIsLoading(false);
-    router.push(usuarioData.rol === "root" || usuarioData.rol === "admin" ? "/dashboard" : "/user");
+    if (usuarioData.rol === "root") {
+      router.push("/admin");
+    } else if (usuarioData.rol === "admin") {
+      router.push("/dashboard");
+    } else {
+      router.push("/user");
+    }
+    
   }
 
   return (
@@ -94,16 +101,19 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          className="pr-10"
+          className="pr-10 w-full p-2 border rounded"
         />
-        <button
-          className="absolute right-2 top-2 text-gray-400 hover:text-gray-200"
-          onClick={() => setShowPassword(!showPassword)}
-          type="button"
+        <span
+          className="absolute right-3 top-3 cursor-pointer text-gray-500"
+          onMouseDown={() => setShowPassword(true)}
+          onMouseUp={() => setShowPassword(false)}
+          onMouseLeave={() => setShowPassword(false)}
         >
-          {showPassword ? "🙈" : "👁️"}
-        </button>
+          👁️
+        </span>
       </div>
+
+
 
       {/* Captcha de Cloudflare Turnstile */}
       <div

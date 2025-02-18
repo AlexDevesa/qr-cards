@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/router";
 import DarkContainer from "../components/DarkContainer";
-import Script from "next/script";
 
-// Definir la propiedad global en window para el callback de Turnstile
 declare global {
   interface Window {
     turnstileCallback?: (token: string) => void;
+    turnstile?: any;
   }
 }
 
@@ -19,14 +18,48 @@ export default function ForgotPassword() {
   const router = useRouter();
 
   useEffect(() => {
-    // Definir el callback de Turnstile
-    window.turnstileCallback = function (token: string) {
+    window.turnstileCallback = (token: string) => {
       setCaptchaToken(token);
     };
 
     return () => {
-      delete window.turnstileCallback; // Limpiar referencia al desmontar
+      delete window.turnstileCallback;
     };
+  }, []);
+
+  useEffect(() => {
+    // Verificar si el script ya existe en el documento
+    if (!document.getElementById("turnstile-script")) {
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      script.async = true;
+      script.defer = true;
+      script.id = "turnstile-script";
+
+      script.onload = () => {
+        // Renderizar Turnstile SOLO si no está presente en el DOM
+        if (window.turnstile && !document.querySelector(".cf-turnstile")) {
+          window.turnstile.render("#captcha-container", {
+            sitekey: "0x4AAAAAAA9J_DKlwm-1EcKR",
+            callback: window.turnstileCallback,
+            theme: "dark",
+          });
+        }
+      };
+
+      document.body.appendChild(script);
+    } else {
+      // Si el script ya está cargado, asegurarse de que el CAPTCHA solo se renderiza una vez
+      if (window.turnstile && !document.querySelector(".cf-turnstile")) {
+        setTimeout(() => {
+          window.turnstile.render("#captcha-container", {
+            sitekey: "0x4AAAAAAA9J_DKlwm-1EcKR",
+            callback: window.turnstileCallback,
+            theme: "dark",
+          });
+        }, 500); // Retraso para evitar dobles renders
+      }
+    }
   }, []);
 
   async function handlePasswordReset() {
@@ -40,7 +73,7 @@ export default function ForgotPassword() {
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "http://localhost:3000/change_password",
+      redirectTo: "http://qr.techversio.com/change_password",
     });
 
     if (error) {
@@ -55,9 +88,6 @@ export default function ForgotPassword() {
 
   return (
     <DarkContainer>
-      {/* Cargar el script de Turnstile */}
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
-
       <h2 className="text-2xl font-bold text-center">Recuperar Contraseña</h2>
 
       {message && (
@@ -78,13 +108,8 @@ export default function ForgotPassword() {
         className="mt-4"
       />
 
-      {/* Captcha de Cloudflare Turnstile */}
-      <div
-        className="cf-turnstile mt-4"
-        data-sitekey="0x4AAAAAAA9J_DKlwm-1EcKR"
-        data-callback="turnstileCallback"
-        data-theme="dark"
-      ></div>
+      {/* Contenedor del CAPTCHA */}
+      <div id="captcha-container" className="mt-4"></div>
 
       <button className="w-full mt-4" onClick={handlePasswordReset} disabled={isLoading}>
         {isLoading ? "Enviando..." : "Enviar Instrucciones"}
