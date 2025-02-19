@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabase";
 import { useRouter } from "next/router";
 import DarkContainer from "../components/DarkContainer";
 import Script from "next/script";
+import Captcha from "../lib/captcha";
+
 
 // Definir la propiedad global en el objeto window para evitar errores de TypeScript
 declare global {
@@ -17,14 +19,11 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(""); // Estado para el token de Turnstile
+  const [captchaToken, setCaptchaToken] = useState(""); 
   const router = useRouter();
+  
 
-  useEffect(() => {
-    // Definir el callback de Turnstile en window
-    window.turnstileCallback = function (token: string) {
-      setCaptchaToken(token);
-    };
+   useEffect(() => {
 
     return () => {
       delete window.turnstileCallback; // Limpiar la referencia cuando el componente se desmonta
@@ -33,8 +32,7 @@ export default function Login() {
 
   async function handleLogin() {
     setErrorMessage("");
-    setIsLoading(true);
-
+    
     if (!captchaToken) {
       setErrorMessage("Debes completar la verificación CAPTCHA.");
       setIsLoading(false);
@@ -115,13 +113,9 @@ export default function Login() {
 
 
 
-      {/* Captcha de Cloudflare Turnstile */}
-      <div
-        className="cf-turnstile mt-4"
-        data-sitekey="0x4AAAAAAA9J_DKlwm-1EcKR"
-        data-callback="turnstileCallback"
-        data-theme="dark"
-      ></div>
+      {/* Captcha  */}
+      <Captcha onVerify={setCaptchaToken} />
+      
 
       {errorMessage && <p className="text-error">{errorMessage}</p>}
 

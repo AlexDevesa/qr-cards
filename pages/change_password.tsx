@@ -2,14 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/router";
 import DarkContainer from "../components/DarkContainer";
+import Captcha from "../lib/captcha";
 
-// Definir la propiedad global en window para el callback de Turnstile
-declare global {
-  interface Window {
-    turnstileCallback?: (token: string) => void;
-    turnstile?: any;
-  }
-}
 
 export default function ChangePassword() {
   const [password, setPassword] = useState("");
@@ -17,49 +11,6 @@ export default function ChangePassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const router = useRouter();
-
-  useEffect(() => {
-    window.turnstileCallback = (token: string) => {
-      setCaptchaToken(token);
-    };
-
-    return () => {
-      delete window.turnstileCallback;
-    };
-  }, []);
-
-  useEffect(() => {
-    // Verificar si el script ya está en el documento
-    if (!document.getElementById("turnstile-script")) {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      script.async = true;
-      script.defer = true;
-      script.id = "turnstile-script";
-
-      script.onload = () => {
-        if (window.turnstile && !document.querySelector(".cf-turnstile")) {
-          window.turnstile.render("#captcha-container", {
-            sitekey: "0x4AAAAAAA9J_DKlwm-1EcKR",
-            callback: window.turnstileCallback,
-            theme: "dark",
-          });
-        }
-      };
-
-      document.body.appendChild(script);
-    } else {
-      if (window.turnstile && !document.querySelector(".cf-turnstile")) {
-        setTimeout(() => {
-          window.turnstile.render("#captcha-container", {
-            sitekey: "0x4AAAAAAA9J_DKlwm-1EcKR",
-            callback: window.turnstileCallback,
-            theme: "dark",
-          });
-        }, 500);
-      }
-    }
-  }, []);
 
   // Función para validar la contraseña
   function validatePassword(password: string): boolean {
@@ -128,7 +79,7 @@ export default function ChangePassword() {
           />
   
           {/* 📌 Contenedor del CAPTCHA */}
-          <div id="captcha-container" className="mt-4"></div>
+          <Captcha onVerify={setCaptchaToken} />
   
           {/* 📌 Botón Guardar */}
           <button className="btn-primary w-full mt-6" onClick={handleChangePassword} disabled={isLoading}>
