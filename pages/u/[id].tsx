@@ -35,10 +35,41 @@ export default function Tarjeta() {
   // Lightbox para ver a pantalla completa
   const [lightboxItem, setLightboxItem] = useState<string | null>(null);
 
-  /** Si falta el protocolo, añadimos https://  */
-  const buildUrl = (url: string | null | undefined) =>
-    !url ? "" : /^https?:\/\//i.test(url) ? url : `https://${url}`;
-  
+  /** Añade https:// si falta */
+const withProtocol = (url: string) =>
+  /^https?:\/\//i.test(url) ? url : `https://${url}`;
+
+/** Normaliza enlaces y devuelve { href, label }  */
+function normalizeLink(
+  type: "web" | "ig" | "li" | "tw" | "yt" | "fb",
+  raw?: string | null
+) {
+  if (!raw) return { href: "", label: "" };
+  const value = raw.trim();
+
+  /* 1 ─ ya trae http/https */
+  if (/^https?:\/\//i.test(value))
+    return { href: value, label: value.replace(/^https?:\/\//i, "") };
+
+  /* 2 ─ valor comienza por @usuario */
+  if (value.startsWith("@")) {
+    const user = value.slice(1);
+    switch (type) {
+      case "ig": return { href: `https://instagram.com/${user}`, label: `@${user}` };
+      case "tw": return { href: `https://twitter.com/${user}`,  label: `@${user}` };
+      case "fb": return { href: `https://facebook.com/${user}`,  label: `@${user}` };
+      default:   return { href: value,                        label: value };
+    }
+  }
+
+  /* 3 ─ linkedin: permitimos in/usuario ó company… */
+  if (type === "li")
+    return { href: `https://linkedin.com/${value.startsWith("in/") ? value : `in/${value}`}`, label: value };
+
+  /* 4 ─ resto: dominio sin protocolo */
+  return { href: withProtocol(value), label: value };
+}
+
 
   useEffect(() => {
     async function fetchData() {
@@ -159,6 +190,14 @@ export default function Tarjeta() {
   const handleVCard= async () => {
     handleDownloadVCF(perfil, empresa, tarjetaId, id, presignedMap);
   }
+  const empresaWeb = normalizeLink("web", empresa.web);
+  const perfilWeb  = normalizeLink("web", perfil.website);
+  const ig = normalizeLink("ig", perfil.instagram);
+  const li = normalizeLink("li", perfil.linkedin);
+  const tw = normalizeLink("tw", perfil.twitter);
+  const yt = normalizeLink("yt", perfil.youtube);
+  const fb = normalizeLink("fb", perfil.facebook);
+
 
 
   return (
@@ -202,17 +241,16 @@ export default function Tarjeta() {
                 <FaPhone className="mr-2 text-gray-600" /> {empresa.telefono}
               </p>
             )}
-            {empresa.web && (
+            {empresaWeb.href && (
               <p className="flex items-center justify-center">
-                <FaGlobe className="mr-2 text-gray-600" />
+                <FaGlobe className="mr-2" />
                 <a
-                  href={buildUrl(empresa.web)}
+                  href={empresaWeb.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 underline"
                 >
-                  {/* mostramos la url sin protocolo para que se vea limpio */}
-                  {empresa.web.replace(/^https?:\/\//i, "")}
+                  {empresaWeb.label}
                 </a>
               </p>
             )}
@@ -249,16 +287,16 @@ export default function Tarjeta() {
               <FaEnvelope className="mr-2 text-gray-600" /> {perfil.email}
             </p>
           )}
-          {perfil.website && (
+          {perfilWeb.href && (
             <p className="flex items-center">
-              <FaGlobe className="mr-2 text-gray-600" />
+              <FaGlobe className="mr-2" />
               <a
-                href={buildUrl(perfil.website)}
+                href={perfilWeb.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 underline"
               >
-                {perfil.website.replace(/^https?:\/\//i, "")}
+                {perfilWeb.label}
               </a>
             </p>
           )}
@@ -271,24 +309,29 @@ export default function Tarjeta() {
               <FaWhatsapp className="text-green-500 text-2xl" />
             </a>
           )}
-          {perfil.linkedin && (
-            <a href={perfil.linkedin} target="_blank" rel="noopener noreferrer">
+          {li.href && (
+            <a href={li.href} target="_blank" rel="noopener noreferrer">
               <FaLinkedin className="text-blue-500 text-2xl" />
             </a>
           )}
-          {perfil.instagram && (
-            <a href={perfil.instagram} target="_blank" rel="noopener noreferrer">
+          {ig.href && (
+            <a href={ig.href} target="_blank" rel="noopener noreferrer">
               <FaInstagram className="text-pink-500 text-2xl" />
             </a>
           )}
-          {perfil.twitter && (
-            <a href={perfil.twitter} target="_blank" rel="noopener noreferrer">
+          {tw.href && (
+            <a href={tw.href} target="_blank" rel="noopener noreferrer">
               <FaTwitter className="text-blue-400 text-2xl" />
             </a>
           )}
-          {perfil.youtube && (
-            <a href={perfil.youtube} target="_blank" rel="noopener noreferrer">
+          {yt.href && (
+            <a href={yt.href} target="_blank" rel="noopener noreferrer">
               <FaYoutube className="text-red-500 text-2xl" />
+            </a>
+          )}
+          {fb.href && (
+            <a href={fb.href} target="_blank" rel="noopener noreferrer">
+              <FaGlobe className="text-blue-600 text-2xl" />
             </a>
           )}
         </div>
