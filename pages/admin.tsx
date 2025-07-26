@@ -53,10 +53,11 @@ export default function AdminPanel() {
       setUsuarios(usuariosData || []);
 
       // 🔹 Obtener Tarjetas
-      const { data: tarjetasData, error: tarjetasError } = await supabase
+      const { data: tarjetasData } = await supabase
         .from("tarjetas")
-        .select("id, codigo, url_custom, empresa_id, comercial_id, activa, empresas(nombre), usuarios(nombre, email)");
-
+        .select(
+          "id, codigo, url_custom, url_id, empresa_id, comercial_id, activa, empresas(nombre), usuarios(nombre, email)"
+        );
       setTarjetas(tarjetasData || []);
 
       
@@ -171,7 +172,8 @@ export default function AdminPanel() {
                 <thead>
                   <tr className="bg-gray-600 text-gray-200 text-sm md:text-base">
                     <th className="border px-2 md:px-4 py-2">Código</th>
-                    <th className="border px-2 md:px-4 py-2">URL</th>
+                    {/* 🔹 nuevo encabezado */}
+                    <th className="border px-2 md:px-4 py-2">URL / Slug</th>
                     <th className="border px-2 md:px-4 py-2">Empresa</th>
                     <th className="border px-2 md:px-4 py-2">Comercial</th>
                     <th className="border px-2 md:px-4 py-2">Estado</th>
@@ -179,26 +181,59 @@ export default function AdminPanel() {
                     <th className="border px-2 md:px-4 py-2">Descargas</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {tarjetas.map((t) => (
-                    <tr key={t.id} className="text-center bg-gray-800 hover:bg-gray-700 text-sm md:text-base">
-                      <td className="border px-2 md:px-4 py-2">{t.codigo}</td>
-                      <td className="border px-2 md:px-4 py-2">
-                        <a href={`https://qr.techversio.com/u/${t.url_custom}`} className="text-blue-400 underline">
-                          {t.url_custom}
-                        </a>
-                      </td>
-                      <td className="border px-2 md:px-4 py-2">{t.empresas?.nombre || "N/A"}</td>
-                      <td className="border px-2 md:px-4 py-2">{t.usuarios?.nombre || "No asignado"}</td>
-                      <td className="border px-2 md:px-4 py-2">
-                        <span className={`inline-block px-3 py-1 rounded-full text-white ${t.activa ? "bg-green-500" : "bg-red-500"}`}>
-                          {t.activa ? "Activa" : "Inactiva"}
-                        </span>
-                      </td>
-                      <td className="border px-2 md:px-4 py-2">{descargas.filter((d) => d.tarjeta_id === t.id && d.tipo === "view").length}</td>
-                      <td className="border px-2 md:px-4 py-2">{descargas.filter((d) => d.tarjeta_id === t.id && d.tipo === "download").length}</td>
-                    </tr>
-                  ))}
+                  {tarjetas.map((t) => {
+                    // 🔹 usamos url_custom si existe; si no, el url_id
+                    const slug = t.url_custom || t.url_id;
+                    const slugCell = slug ? (
+                      <a
+                        href={`https://qr.techversio.com/u/${slug}`}
+                        className="text-blue-400 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {slug}
+                      </a>
+                    ) : (
+                      "—"
+                    );
+
+                    return (
+                      <tr
+                        key={t.id}
+                        className="text-center bg-gray-800 hover:bg-gray-700 text-sm md:text-base"
+                      >
+                        <td className="border px-2 md:px-4 py-2">{t.codigo}</td>
+                        <td className="border px-2 md:px-4 py-2">{slugCell}</td>
+                        <td className="border px-2 md:px-4 py-2">
+                          {t.empresas?.nombre || "N/A"}
+                        </td>
+                        <td className="border px-2 md:px-4 py-2">
+                          {t.usuarios?.nombre || "No asignado"}
+                        </td>
+                        <td className="border px-2 md:px-4 py-2">
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-white ${
+                              t.activa ? "bg-green-500" : "bg-red-500"
+                            }`}
+                          >
+                            {t.activa ? "Activa" : "Inactiva"}
+                          </span>
+                        </td>
+                        <td className="border px-2 md:px-4 py-2">
+                          {descargas.filter(
+                            (d) => d.tarjeta_id === t.id && d.tipo === "view"
+                          ).length}
+                        </td>
+                        <td className="border px-2 md:px-4 py-2">
+                          {descargas.filter(
+                            (d) => d.tarjeta_id === t.id && d.tipo === "download"
+                          ).length}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
