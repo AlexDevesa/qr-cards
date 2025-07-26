@@ -35,6 +35,9 @@ export default function Tarjeta() {
   // Lightbox para ver a pantalla completa
   const [lightboxItem, setLightboxItem] = useState<string | null>(null);
 
+  /** Si falta el protocolo, añadimos https://  */
+  const buildUrl = (url: string | null | undefined) =>
+    !url ? "" : /^https?:\/\//i.test(url) ? url : `https://${url}`;
   
 
   useEffect(() => {
@@ -202,8 +205,14 @@ export default function Tarjeta() {
             {empresa.web && (
               <p className="flex items-center justify-center">
                 <FaGlobe className="mr-2 text-gray-600" />
-                <a href={empresa.web} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                  {empresa.web}
+                <a
+                  href={buildUrl(empresa.web)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  {/* mostramos la url sin protocolo para que se vea limpio */}
+                  {empresa.web.replace(/^https?:\/\//i, "")}
                 </a>
               </p>
             )}
@@ -243,8 +252,13 @@ export default function Tarjeta() {
           {perfil.website && (
             <p className="flex items-center">
               <FaGlobe className="mr-2 text-gray-600" />
-              <a href={perfil.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                {perfil.website}
+              <a
+                href={buildUrl(perfil.website)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
+                {perfil.website.replace(/^https?:\/\//i, "")}
               </a>
             </p>
           )}
